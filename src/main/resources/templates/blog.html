@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:insert="section/head ::head">
+    <meta charset="UTF-8">
+    <title>Blog</title>
+</head>
+<header th:insert="section/header ::header"></header>
+<body>
+    <div class="container">
+        <h2 style="text-align: center">POSTS</h2>
+        <hr/>
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-around">
+            <div th:each="post : ${posts}" class="shadow p-3 mb-5 bg-white rounded">
+                <h3 th:text="${post.getHeader()}"></h3>
+                <a th:href="'/blog/' + ${post.getId()}" class="btn btn-outline-primary">
+                    <img style="height: 200px; width: auto; object-fit: cover;" th:src="${post.getLinkImage()}"
+                         class="card-img-top" th:alt="${post.getHeader()}">
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+<footer th:insert="section/footer ::footer"></footer>
+</html>

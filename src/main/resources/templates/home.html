@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:insert="section/head ::head">
+    <meta charset="UTF-8">
+    <title>Home</title>
+
+</head>
+<header th:insert="section/header ::header"></header>
+
+<style>
+    html {
+        background-image: url("/static/1.png");
+        background-size: cover; /* Adjust as needed */
+        background-repeat: no-repeat; /* Prevent repeating the background image */
+        background-attachment: fixed; /* Optional, to fix the image when scrolling */
+        /* Additional background properties and styling can be added here */
+    }
+
+</style>
+<body>
+     <div class="container">
+         <h2 th:text="${introduction}"></h2>
+         <p th:text="${text}" style="text-align: justify"></p>
+         <img th:src="@{/static/1.png}" alt="image">
+     </div>
+</body>
+<footer th:insert="section/footer ::footer"></footer>
+</html>

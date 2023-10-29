@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:insert="section/head ::head">
+    <meta charset="UTF-8">
+    <title>Blog Bugatti Veyron</title>
+</head>
+<header th:insert="section/header ::header"></header>
+<body>
+    <div class="container">
+        <h2 th:text="${title}"></h2>
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-around; margin: 20px 0">
+            <div th:each="image : ${images}">
+                <img style="height: 200px; width: auto; object-fit: cover;" th:src="${image}" th:alt="'Cars'"/>
+            </div>
+        </div>
+        <div>
+            <p th:text="${text}" style="text-align: justify"></p>
+            <div th:each="txt : ${txts}">
+                <p th:text="${txt}" style="text-align: justify"></p>
+            </div>
+            <p th:text="${resume}" style="text-align: justify"></p>
+        </div>
+    </div>
+</body>
+<footer th:insert="section/footer ::footer"></footer>
+</html>

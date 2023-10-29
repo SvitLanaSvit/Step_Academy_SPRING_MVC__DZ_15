@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:insert="section/head ::head">
+    <meta charset="UTF-8">
+    <title>Contacts</title>
+</head>
+<header th:insert="section/header ::header"></header>
+<style>
+    th{
+        text-align: right;
+    }
+
+    th, td{
+        border: none;
+    }
+</style>
+<body>
+    <div class="container">
+        <div>
+            <h2 th:text="'MY CONTACTS'"></h2>
+            <table class="table table-hover table-striped">
+                <tr>
+                    <th>Full name:</th>
+                    <td th:text="${contacts[0].getFirstname()} + ' ' + ${contacts[0].getLastname()}"></td>
+                </tr>
+                <tr>
+                    <th>Phone:</th>
+                    <td th:text="${contacts[0].getPhone()}"></td>
+                </tr>
+                <tr>
+                    <th>E-Mail:</th>
+                    <td th:text="${contacts[0].getEmail()}"></td>
+                </tr>
+                <tr>
+                    <th>Linkedin:</th>
+                    <td>
+                        <a th:href="${contacts[0].getLinkLinkedin()}" target="_blank">Link to Linkedin</a>
+                    </td>
+                </tr>
+                <tr>
+                    <th>GitHub:</th>
+                    <td>
+                        <a th:href="${contacts[0].getLinkGithub()}" target="_blank">Link to GitHub</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+<footer th:insert="section/footer ::footer"></footer>
+</html>

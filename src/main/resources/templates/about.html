@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:insert="section/head ::head">
+    <meta charset="UTF-8">
+    <title>About</title>
+</head>
+<header th:insert="section/header ::header"></header>
+<body>
+    <div class="container">
+        <h2 style="text-align: center">SPORT CARS</h2>
+        <div style="display: flex; flex-wrap: wrap; justify-content: space-around">
+            <div th:each="sportCar : ${sportCars}" class="shadow p-3 mb-2 bg-white rounded">
+                <div class="card" style="width: 18rem;">
+                    <img style="height: 150px; width: auto; object-fit: cover;" th:src="${sportCar.getLink()}"
+                         class="card-img-top" th:alt="${sportCar.getModel()}">
+                    <div class="card-body">
+                        <p style="font-weight: bolder" class="card-text" th:text="${sportCar.getYear()}"></p>
+                        <p class="card-text" th:text="${sportCar.getModel()}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="shadow p-3 mb-5 bg-white rounded">
+            <p style="text-align: justify" th:text="${name}"></p>
+        </div>
+    </div>
+</body>
+<footer th:insert="section/footer ::footer"></footer>
+</html>
