@@ -3,6 +3,7 @@ package com.example.meeting_15_spring.controllers;
 import com.example.meeting_15_spring.models.Post;
 import com.example.meeting_15_spring.repositories.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +25,9 @@ public class BlogController {
     @Autowired
     private PostRepository postRepository;
 
+    @Value("${upload.path}")
+    private String uploadPath;
+
     @GetMapping("/blog")
     public String getBlog(Model model){
         Iterable<Post> iterable = postRepository.findAll();
@@ -40,30 +44,30 @@ public class BlogController {
     public String getNewPostToPost(
             @RequestParam String context,
             @RequestParam String header,
-            @RequestParam File linkImage,
+            @RequestParam MultipartFile linkImage,
             Model model) throws IOException {
         Post post = new Post();
         post.setContext(context);
         post.setHeader(header);
-        String path = new ClassPathResource("static/").getPath() +linkImage.getName();
-        try(
-                var stream = new FileInputStream(linkImage.getAbsolutePath());
-                var output = new FileOutputStream(path)
-        )
-        {
-            output.write(stream.readAllBytes());
+        try {
+            // Define the physical file path where you want to save the uploaded file
+            String fileName = linkImage.getOriginalFilename();
+            String filePath = "src/main/resources/static/" + fileName;
+
+            // Create a FileOutputStream to write the file to the specified path
+            try (var output = new FileOutputStream(filePath)) {
+                output.write(linkImage.getBytes());
+            }
+
+            // Save the post to the database with the file path
+            post.setLinkImage(fileName);
+            postRepository.save(post);
+
+            return "redirect:/blog";
+        } catch (IOException ex) {
+            ex.printStackTrace(); // Handle the exception appropriately
+            return "redirect:/error"; // Redirect to an error page if an exception occurs
         }
-        catch (Exception ex)
-        {
-            System.out.println(ex.getMessage());
-        }
-//        File resourceDirectory = ResourceUtils.getFile("classpath:static");
-//        String fileName = linkImage.getName();
-//        Path filePath = Paths.get(resourceDirectory.getAbsolutePath(), fileName);
-//        Files.copy(linkImage.toPath(), filePath);
-        post.setLinkImage(linkImage.getName());
-        postRepository.save(post);
-        return "redirect:/blog";
     }
 
     @GetMapping("/blog/1")

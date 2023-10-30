@@ -7,10 +7,10 @@
 <header th:insert="section/header ::header"></header>
 <body>
   <div class="container">
-      <form action="/blog/newPost" method="post">
+      <form action="/blog/newPost" method="post" enctype="multipart/form-data">
           <div class="mb-3 w-25">
               <label for="context" class="form-label">Context:</label>
-              <textarea type="text" class="form-control" id="context" name="context"></textarea>
+              <textarea type="text" class="form-control" id="context" name="context" rows="10"></textarea>
           </div>
           <div class="mb-3 w-25">
               <label for="header" class="form-label">Header:</label>
