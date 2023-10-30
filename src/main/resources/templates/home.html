@@ -9,11 +9,14 @@
 
 <style>
     html {
-        background-image: url("/static/1.png");
+        background-image: url("1.png");
         background-size: cover; /* Adjust as needed */
         background-repeat: no-repeat; /* Prevent repeating the background image */
         background-attachment: fixed; /* Optional, to fix the image when scrolling */
         /* Additional background properties and styling can be added here */
+    }
+    body{
+        background-color: transparent;
     }
 
 </style>
@@ -21,7 +24,6 @@
      <div class="container">
          <h2 th:text="${introduction}"></h2>
          <p th:text="${text}" style="text-align: justify"></p>
-         <img th:src="@{/static/1.png}" alt="image">
      </div>
 </body>
 <footer th:insert="section/footer ::footer"></footer>

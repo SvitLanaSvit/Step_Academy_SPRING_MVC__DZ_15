@@ -3,10 +3,19 @@ package com.example.meeting_15_spring.controllers;
 import com.example.meeting_15_spring.models.Post;
 import com.example.meeting_15_spring.repositories.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +29,41 @@ public class BlogController {
         Iterable<Post> iterable = postRepository.findAll();
         model.addAttribute("posts", iterable);
         return "blog";
+    }
+
+    @GetMapping("/blog/newPost")
+    public String getNewPost(Model model){
+        return "newPost";
+    }
+
+    @PostMapping("/blog/newPost")
+    public String getNewPostToPost(
+            @RequestParam String context,
+            @RequestParam String header,
+            @RequestParam File linkImage,
+            Model model) throws IOException {
+        Post post = new Post();
+        post.setContext(context);
+        post.setHeader(header);
+        String path = new ClassPathResource("static/").getPath() +linkImage.getName();
+        try(
+                var stream = new FileInputStream(linkImage.getAbsolutePath());
+                var output = new FileOutputStream(path)
+        )
+        {
+            output.write(stream.readAllBytes());
+        }
+        catch (Exception ex)
+        {
+            System.out.println(ex.getMessage());
+        }
+//        File resourceDirectory = ResourceUtils.getFile("classpath:static");
+//        String fileName = linkImage.getName();
+//        Path filePath = Paths.get(resourceDirectory.getAbsolutePath(), fileName);
+//        Files.copy(linkImage.toPath(), filePath);
+        post.setLinkImage(linkImage.getName());
+        postRepository.save(post);
+        return "redirect:/blog";
     }
 
     @GetMapping("/blog/1")
