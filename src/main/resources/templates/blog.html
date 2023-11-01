@@ -16,9 +16,22 @@
                     <img style="height: 200px; width: auto; object-fit: cover;" th:src="${post.getLinkImage()}"
                          class="card-img-top" th:alt="${post.getHeader()}">
                 </a>
+                <div class="btn-group">
+                    <a th:href="'/blog/' + ${post.getId()} + '/update'" class="btn btn-sm btn-warning">UPDATE</a>
+                    <a th:id="remove${post.getId()}" th:href="'/blog/' + ${post.getId()} + '/remove'" class="btn btn-sm btn-danger">REMOVE</a>
+                </div>
             </div>
         </div>
     </div>
 </body>
 <footer th:insert="section/footer ::footer"></footer>
 </html>
+<!--<script>-->
+<!--    const buttonRemove = document.getElementById('remove');-->
+<!--    buttonRemove.addEventListener('click', ()=>{-->
+<!--        const confirmButton = confirm("Do you definitely want to remove this item completely?");-->
+<!--        if(confirmButton){-->
+<!--            -->
+<!--        }-->
+<!--    });-->
+<!--</script>-->

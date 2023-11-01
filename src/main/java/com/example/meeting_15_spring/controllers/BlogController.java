@@ -1,22 +1,26 @@
 package com.example.meeting_15_spring.controllers;
 
+import com.azure.storage.blob.BlobClient;
+import com.azure.storage.blob.BlobContainerClient;
+import com.azure.storage.blob.BlobServiceClient;
+import com.azure.storage.blob.models.BlobAccessPolicy;
+import com.azure.storage.blob.models.BlobSignedIdentifier;
+import com.azure.storage.blob.models.PublicAccessType;
 import com.example.meeting_15_spring.models.Post;
 import com.example.meeting_15_spring.repositories.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+import com.azure.storage.blob.BlobServiceClientBuilder;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,18 +29,40 @@ public class BlogController {
     @Autowired
     private PostRepository postRepository;
 
+    private BlobServiceClient client;
+    private BlobContainerClient container;
+
+    public BlogController() {
+        BlobServiceClientBuilder builder = new BlobServiceClientBuilder();
+        client = builder.connectionString("UseDevelopmentStorage=true").buildClient();
+
+        //ВАЖНО!!!!
+        //azurite --silent --location c:\azurite --debug c:\azurite\debug.log --skipApiVersionCheck
+        //Запускать Azurite ИМЕННО с этой команды, иначе выдаст ошибку
+        //ВАЖНО!!!!
+        BlobSignedIdentifier identifier = new BlobSignedIdentifier().setId("test policy")
+                .setAccessPolicy(new BlobAccessPolicy().setStartsOn(OffsetDateTime.now())
+                        .setExpiresOn(OffsetDateTime.now().plusDays(7))
+                        .setPermissions("cd")); //permission for create and delete
+
+        ArrayList<BlobSignedIdentifier> identifiers = new ArrayList<>();
+        identifiers.add(identifier);
+        container = client.createBlobContainerIfNotExists("posts");
+        container.setAccessPolicy(PublicAccessType.CONTAINER, identifiers);
+    }
+
     @Value("${upload.path}")
     private String uploadPath;
 
     @GetMapping("/blog")
-    public String getBlog(Model model){
+    public String getBlog(Model model) {
         Iterable<Post> iterable = postRepository.findAll();
         model.addAttribute("posts", iterable);
         return "blog";
     }
 
     @GetMapping("/blog/newPost")
-    public String getNewPost(Model model){
+    public String getNewPost(Model model) {
         return "newPost";
     }
 
@@ -61,17 +87,77 @@ public class BlogController {
 
             // Save the post to the database with the file path
             post.setLinkImage(fileName);
-            postRepository.save(post);
 
-            return "redirect:/blog";
         } catch (IOException ex) {
             ex.printStackTrace(); // Handle the exception appropriately
             return "redirect:/error"; // Redirect to an error page if an exception occurs
         }
+
+        try (var stream = linkImage.getInputStream()) {
+            BlobClient cl = container.getBlobClient(linkImage.getOriginalFilename());
+            cl.upload(stream, stream.available(), true);
+//            post.setLinkImage(cl.getBlobUrl()); //if I work with blob and BD
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return "redirect:/error";
+        }
+
+        postRepository.save(post);
+        return "redirect:/blog";
+    }
+
+    @GetMapping("/blog/{id}/update")
+    public String postUpdate(@PathVariable(value = "id") Long id, Model model){
+        Post post = postRepository.findById(id).orElse(null);
+        if(post != null){
+            model.addAttribute("post", post);
+        }
+        return "updatePost";
+    }
+
+    @PostMapping("/blog/{id}/update")
+    public String postUpdateSave(@PathVariable(value = "id") Long id,
+                                 @RequestParam String context,
+                                 @RequestParam String header,
+                                 @RequestParam MultipartFile linkImage,
+                                 Model model){
+        Post post = postRepository.findById(id).orElse(null);
+        assert post != null;
+        if(!context.equals(post.getContext())){
+            post.setContext(context);
+        }
+
+        if(!header.equals(post.getHeader())){
+            post.setHeader(header);
+        }
+
+        if(linkImage != null){
+            BlobClient cl = container.getBlobClient((post.getLinkImage()));
+            cl.deleteIfExists();
+            BlobClient clUpdate = container.getBlobClient(linkImage.getOriginalFilename());
+            try(var stream = linkImage.getInputStream()){
+                clUpdate.upload(stream, stream.available(), true);
+                post.setLinkImage(cl.getBlobUrl()); //if I work with blob and BD
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        postRepository.save(post);
+        return "redirect:/blog";
+    }
+
+    @GetMapping("/blog/{id}/remove")
+    public String postRemove(@PathVariable(value = "id") Long id, Model model){
+        Post post = postRepository.findById(id).orElse(null);
+        assert post != null;
+        BlobClient cl = container.getBlobClient(post.getLinkImage());
+        cl.deleteIfExists();
+        postRepository.delete(post);
+        return "redirect:/blog";
     }
 
     @GetMapping("/blog/1")
-    public String getBlog1(Model model){
+    public String getBlog1(Model model) {
         String title = "Bugatti Veyron";
         List<String> images = new ArrayList<>(
                 List.of(
@@ -121,7 +207,7 @@ public class BlogController {
     }
 
     @GetMapping("/blog/2")
-    public String getBlog2(Model model){
+    public String getBlog2(Model model) {
         String title = "Maybach Exalero";
         List<String> images = new ArrayList<>(
                 List.of(
@@ -159,7 +245,7 @@ public class BlogController {
     }
 
     @GetMapping("/blog/3")
-    public String getBlog3(Model model){
+    public String getBlog3(Model model) {
         String title = "Pagani Huayre Tricolore";
         List<String> images = new ArrayList<>(
                 List.of(
